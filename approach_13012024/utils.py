@@ -33,7 +33,7 @@ def save_model(
     )
 
 
-def get_run_path(time: float):
+def get_run_path(time: float) -> Path:
     current_date = datetime.fromtimestamp(time).strftime("%Y-%m-%d-%H-%M-%S")
     run_path = Path(f"{current_date}")
     run_path.mkdir(parents=True, exist_ok=True)

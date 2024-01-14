@@ -29,7 +29,7 @@ class ForwardDiffusion:
     sqrt_one_minus_alphas_cumprod = torch.sqrt(1.0 - alphas_cumprod)
     posterior_variance = betas * (1.0 - alphas_cumprod_prev) / (1.0 - alphas_cumprod)
 
-    def sample(self, x_0: Tensor, t: Tensor):
+    def sample(self, x_0: Tensor, t: Tensor) -> tuple[Tensor, Tensor]:
         noise = torch.randn_like(x_0)
         sqrt_alphas_cumprod_t = get_index_from_list(
             self.sqrt_alphas_cumprod, t, x_0.shape
@@ -46,13 +46,13 @@ class ForwardDiffusion:
             self.device
         )
 
-    def get_loss(self, model: Unet, x_0: Tensor, t: Tensor):
+    def get_loss(self, model: Unet, x_0: Tensor, t: Tensor) -> Tensor:
         x_noisy, noise = self.sample(x_0, t)
         noise_pred = model(x_noisy, t)
         return F.l1_loss(noise, noise_pred)
 
     @torch.no_grad()
-    def sample_timestep(self, model: Unet, x: Tensor, t: Tensor):
+    def sample_timestep(self, model: Unet, x: Tensor, t: Tensor) -> Tensor:
         """
         Calls the model to predict the noise in the image and returns
         the denoised image.
@@ -82,7 +82,7 @@ class ForwardDiffusion:
         save_path: Path,
         num_images: int = 10,
         epoch_number: int = 0,
-    ):
+    ) -> None :
         # Sample noise
         img = torch.randn((1, 1, self.img_size, self.img_size), device=self.device)
 
@@ -100,4 +100,4 @@ class ForwardDiffusion:
             images, cmap="binary", col_wrap=num_images, showticks=False, cbar=False
         )
         plt.savefig(save_path / f"epoch_{epoch_number}_pic.png")
-        plt.show()
+        # plt.show()
