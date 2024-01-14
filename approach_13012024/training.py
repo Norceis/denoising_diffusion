@@ -53,7 +53,7 @@ if __name__ == "__main__":
             loss.backward()
             optimizer.step()
 
-            epoch_progress_bar.set_postfix(loss=loss.item())
+            epoch_progress_bar.set_postfix(loss=loss.item(), refresh=True)
             epoch_progress_bar.update(1)
 
             elapsed_time = time.time() - current_time
@@ -64,7 +64,7 @@ if __name__ == "__main__":
                 print(
                     f"Model saved at epoch {epoch}, step {step}, elapsed time {total_time_lapsed} min"
                 )
-
+        epoch_progress_bar.close()
         fd.plot_image_generation(model, run_path, num_images=10, epoch_number=epoch)
 
     total_time_lapsed = int((time.time() - beginning_time) / 60)
