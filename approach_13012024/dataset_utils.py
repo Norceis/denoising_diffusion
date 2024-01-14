@@ -1,6 +1,5 @@
 import torch
 import torchvision
-import matplotlib.pyplot as plt
 from torchvision import transforms
 from torch.utils.data import DataLoader
 import numpy as np
@@ -11,10 +10,6 @@ BATCH_SIZE = 128
 
 
 def load_transformed_dataset():
-    """
-    Returns data after applying appropriate transformations,
-    to work with diffusion models.
-    """
     data_transforms = [
         transforms.Resize((IMG_SIZE, IMG_SIZE)),
         transforms.RandomHorizontalFlip(),
@@ -34,11 +29,7 @@ def load_transformed_dataset():
     return torch.utils.data.ConcatDataset([train, test])
 
 
-def show_tensor_image(image: Tensor) -> None:
-    """
-    Plots image after applying reverse transformations.
-    """
-
+def convert_tensor_to_image(image: Tensor) -> None:
     reverse_transforms = transforms.Compose(
         [
             transforms.Lambda(lambda t: (t + 1) / 2),
@@ -51,7 +42,8 @@ def show_tensor_image(image: Tensor) -> None:
 
     if len(image.shape) == 4:
         image = image[0, :, :, :]
-    plt.imshow(reverse_transforms(image))
+
+    return reverse_transforms(image)
 
 
 # dataloader = DataLoader(

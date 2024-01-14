@@ -1,8 +1,13 @@
+from pathlib import Path
+
+import numpy as np
 import torch
 import torch.nn.functional as F
+from matplotlib import pyplot as plt
 from torch import Tensor
 from dataclasses import dataclass
-
+import seaborn_image as isns
+from dataset_utils import convert_tensor_to_image
 from unet import Unet
 from utils import get_index_from_list, get_device
 
@@ -12,6 +17,7 @@ class ForwardDiffusion:
     timesteps: int = 300
     start: float = 0.0001
     end: float = 0.02
+    img_size: int = 32
     device = get_device()
 
     betas = torch.linspace(start, end, timesteps)
@@ -68,3 +74,30 @@ class ForwardDiffusion:
         else:
             noise = torch.randn_like(x)
             return model_mean + torch.sqrt(posterior_variance_t) * noise
+
+    @torch.no_grad()
+    def plot_image_generation(
+        self,
+        model: Unet,
+        save_path: Path,
+        num_images: int = 10,
+        epoch_number: int = 0,
+    ):
+        # Sample noise
+        img = torch.randn((1, 1, self.img_size, self.img_size), device=self.device)
+
+        images = []
+        stepsize = int(self.timesteps / num_images)
+
+        for i in range(0, self.timesteps)[::-1]:
+            t = torch.full((1,), i, device=self.device, dtype=torch.long)
+            img = self.sample_timestep(model, img, t)
+            if i % stepsize == 0:
+                output_img = convert_tensor_to_image(img.detach().cpu())
+                images.append(np.array(output_img, dtype=np.int32))
+
+        isns.ImageGrid(
+            images, cmap="binary", col_wrap=num_images, showticks=False, cbar=False
+        )
+        plt.savefig(save_path / f"epoch_{epoch_number}_pic.png")
+        plt.show()
